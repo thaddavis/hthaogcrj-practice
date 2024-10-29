@@ -6,11 +6,11 @@ on:
 
 env:
   PROJECT_ID: ${{ vars.PROJECT_ID }} # Google Cloud project id
-  PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }} # Google Cloud project number
+  PROJECT_NUMBER: ${{ vars.  }} # Google Cloud project number
   JOB_NAME: ${{ vars.JOB_NAME }} # Cloud Run Job name
   CLOUD_RUN_REGION: ${{ vars.CLOUD_RUN_REGION }} # Cloud Run region
   DOCKER_IMAGE_URL: ${{ vars.DOCKER_IMAGE_URL }} # Docker image URL
-  ARTIFACTORY_URL: ${{ vars.ARTIFACTORY_URL }} # Artifactory URL
+  DOCKER_IMAGE_ARTIFACTORY_URL: ${{ vars.DOCKER_IMAGE_ARTIFACTORY_URL }} # Artifactory URL
 
 jobs:
   deploy:
@@ -32,6 +32,9 @@ jobs:
 
       - name: Set Docker Image Tag
         run: echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+
+      - name: Print Docker Image Tad
+        run: echo $IMAGE_TAG
 
       - name: Build and Push Container
         run: |-
