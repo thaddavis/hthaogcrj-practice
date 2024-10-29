@@ -12,8 +12,8 @@ Here’s an architecture diagram for clarity…
 
 This general design can be used as the foundation for many applications but to get your creative juices flowing, I’ll give you 2 that come to mind…
 
-1) a productivity hack for staying up-to-date on a niche that matters to you
-2) building your own A.I.-powered newsletter
+	1) a productivity hack for staying up-to-date on a niche that matters to you
+	2) building your own A.I.-powered newsletter
 
 We’ll build these news reporters using CrewAI (which is a Python-based tool for programming AI Agents) and we’ll design these A.I. news reporters to run on a hosting service managed by Google called “Cloud Run Jobs”.
 

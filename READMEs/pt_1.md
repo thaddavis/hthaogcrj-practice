@@ -81,6 +81,39 @@ docker version
 
 And everything’s looking good.
 
-Now we can continue to PART 2!
+Before moving to PART 2, let’s save our progress in a remote .git repository. We will be using GitHub.
+
+- https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials
+- https://docs.github.com/en/get-started/getting-started-with-git/caching-your-github-credentials-in-git
+
+There are multiple ways to authenticate a .git client with remote repository, for example, after creating a repo in GitHub you can connect to it via SSH or HTTPS protocol. Dev Containers offer built-in support for connecting to .git repos via both of these protocols BUT for demonstration purposes we’ll use HTTPS. Long story short, how this works is the credentials that are set up on our base machine get shared with the “Dev Container” automatically in the background.
+
+Let me show you what I mean…
+
+1st let’s create a repo in GitHub — I’ll call mine `hthtogcrj`. And then let’s configure our project folder to use this GitHub repository for storing a backup of all the changes we make by entering the following commands…
+
+```
+git init
+git remote add origin https://github.com/thaddavis/hthaogcrj-practice.git
+```
+
+If I delete the credential for github.com in MacOS’s built in credential management application, called Keychain Access, you’ll see that my attempts to push code to the repo fail both on my base machine as well as in the Dev Container…
+
+If I re-authenticate in the base environment using a GitHub Personal Access Token (PAT) that contains the permissions to view and edit the contents of this repo we just created, we can see the .git commands now work on both the base machine and in the Dev Container…
+
+If we need more permissions attached to this PAT we can always add them later in the GitHub console…
+
+In practical terms here’s the difference between the authentication options offered by GitHub…
+
+- Authenticating via SSH protocol is the most permissive. It’ll allow you to interact with all repos in your GitHub account
+- Authenticating via HTTPS offer fine-grained access control. It allows you to specify exactly which data in your GitHub account a machine can access
+
+Because this video is NOT a deep dive on GitHub, we’ll leave it there…
+
+If you have issues connecting to your remote .git repository in the “Dev Container”, you can use a terminal on your host machine for interacting with GitHub as PLAN B.
+
+So let’s save all our code so far.
 
 <FIRST_GIT_TAG> and include README.md too 🔑
+
+And no that we have our code stored in GitHub let’s continue on to PART 2!
