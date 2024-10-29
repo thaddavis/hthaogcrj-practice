@@ -28,7 +28,7 @@ jobs:
 
       - name: Configure Docker
         run: |
-          gcloud auth configure-docker ${{ env.ARTIFACTORY_URL }}
+          gcloud auth configure-docker ${{ env.DOCKER_IMAGE_ARTIFACTORY_URL }}
 
       - name: Set Docker Image Tag
         run: echo "IMAGE_TAG=latest" >> $GITHUB_ENV
