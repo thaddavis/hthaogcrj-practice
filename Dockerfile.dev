@@ -44,3 +44,20 @@ USER vscode
 
 WORKDIR /code
 ENV PYTHONPATH=/code
+
+# set up aliases
+RUN echo "alias gaa='git add .'" >> ~/.bashrc \
+  && echo "alias gb='git branch'" >> ~/.bashrc \
+  && echo "alias gbd='git branch --delete'" >> ~/.bashrc \
+  && echo "alias gc='git commit'" >> ~/.bashrc \
+  && echo "alias gcm='git commit --message'" >> ~/.bashrc \
+  && echo "alias gco='git checkout'" >> ~/.bashrc \
+  && echo "alias gcob='git checkout -b'" >> ~/.bashrc \
+  && echo "alias gd='git diff'" >> ~/.bashrc \
+  && echo "alias gl='git log'" >> ~/.bashrc \
+  && echo "alias glg='git log --graph --oneline --decorate --all'" >> ~/.bashrc \
+  && echo "alias gld='git log --pretty=format:\"%h %ad %s\" --date=short --all'" >> ~/.bashrc \
+  && echo "alias gm='git merge --no-ff'" >> ~/.bashrc \
+  && echo "alias gp='git pull'" >> ~/.bashrc \
+  && echo "alias gs='git status'" >> ~/.bashrc \
+  && echo "alias gss='git status --short'" >> ~/.bashrc
