@@ -8,6 +8,8 @@ from helpers.replace_yaml_variables import replace_yaml_variables
 from application_schema.news_results import NewsResults
 
 from dotenv import load_dotenv
+
+from helpers.send_email import send_email
 load_dotenv()
 
 # vvv YAML Configuration vvv
@@ -49,22 +51,23 @@ def main():
     research_task = Task(
         description=tasks_yaml["research_task"]["description"],
         expected_output=tasks_yaml["research_task"]["expected_output"],
-        # output_pydantic=NewsResults,
         output_file='report.md'
     )
 
-    crew = Crew(
-        agents=workers,
-        manager_agent=manager,
-        tasks=[research_task],
-        process=Process.hierarchical,
-        verbose=True,
-    )
+    # crew = Crew(
+    #     agents=workers,
+    #     manager_agent=manager,
+    #     tasks=[research_task],
+    #     process=Process.hierarchical,
+    #     verbose=True,
+    # )
 
-    crew_output = crew.kickoff()
+    # crew_output = crew.kickoff()
 
-    print('FINAL OUTPUT')
-    print(crew_output.raw)
+    # print('FINAL OUTPUT')
+    # print(crew_output.raw)
+
+    send_email()
     
 if __name__ == "__main__":
     try:
