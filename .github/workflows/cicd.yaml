@@ -33,7 +33,7 @@ jobs:
       - name: Set Docker Image Tag
         run: echo "IMAGE_TAG=latest" >> $GITHUB_ENV
 
-      - name: Print Docker Image Tad
+      - name: Print Docker Image Tag
         run: echo $IMAGE_TAG
 
       - name: Build and Push Container
