@@ -11,3 +11,4 @@ class NewsResult(BaseModel):
 
 class NewsResults(BaseModel):
   results: list[NewsResult]
+  created_at: str
