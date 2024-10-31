@@ -9,7 +9,7 @@ def send_email(recipients: list[str], body: str):
       data={
         "from": "A.I. News Reporter <noreply@mail.wishbliss.link>",
         "to": recipients,
-        "subject": "Hello",
+        "subject": "New A.I. News Report",
         "html": body,
       }
     )
