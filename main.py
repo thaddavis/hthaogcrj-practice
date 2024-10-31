@@ -73,6 +73,9 @@ def main():
     crew_output = crew.kickoff()
 
     email_list = emails.split(',')
+
+    print('email_list', email_list)
+
     for email in email_list:
         if bool(email) and is_valid_email(email):
             send_email([email.strip()], "InsureTech News Update", format_news_for_email(crew_output.pydantic, current_date))
