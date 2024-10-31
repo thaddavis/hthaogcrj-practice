@@ -2,17 +2,17 @@ INTRO - How to host CrewAI Agents on Google Cloud Run
 
 In this video we’ll take a close look at a PRODUCTION application involving the use of LLMs, AI agents, GCP, Python, and Docker.
 
-That’s right I said PRODUCTION. This is the real deal. So wake up!
+That’s right I said PRODUCTION. This is the real deal. Wake up!
 
 If you’re new to these technologies, I’ll do my best to make them approachable but you will need at least some familiarity with Python, Cloud Computing, and CLIs to easily follow along.
 
-If you’re already very familiar with these technologies, I’d love your feedback on this application’s overall design…
+If you’re already very familiar with these technologies, I’d love your feedback on this application’s overall design in the comments…
 
-What we’re going to do in this video is build up from scratch a team of customizable A.I. news reporters that will synthesize information from a configurable list of websites and report it to us on a regular basis via email. By regular basis I mean hourly or daily, or whatever interval we’d like.
+In this video we’re going to build a team of personalized A.I. news reporters who will send us daily bullet points highlighting news updates happening across multiple websites
 
 Here’s an architecture diagram of what we’ll be building for clarity…
 
-This design can be used as the foundation for many applications but to get your creative juices flowing, I’ll give you 2 that come to mind…
+This design can be used as the foundation for many applications BUT to get your creative juices flowing, I’ll give you 2 that come to mind…
 
 	1) a productivity hack for staying up-to-date on a niche that matters to you
 	2) building your own A.I.-powered newsletter
@@ -25,40 +25,45 @@ Running our application in the Cloud means it’ll work for us regardless of if 
 
 HERE’S AN OVERVIEW OF THE SECTIONS THAT FOLLOW SO YOU KNOW WHAT’S COMING
  
-- PART 1? - Setting up our Dev Container
-- PART 2? - Deploying a simple Job to Google Cloud Run with CICD
-- PART 3? - CICD with GitHub Actions
-- PART 4? - Setting up a cron job using Cloud Scheduler
-- PART 5? - Adding the CrewAI Agents
-- PART 6? - Adding Mailgun
-- PART 7? - Deploying the application to Google Cloud
-- PART 8? - Adding AgentOps
+- PART 1 - Setting up our Dev Container
+- PART 2 - Deploying a simple Job to Google Cloud Run with CICD
+- PART 3 - CICD with GitHub Actions
+- PART 4 - Setting up a cron job using Cloud Scheduler
+- PART 5 - Adding CrewAI Agents
+- PART 6 - Adding Mailgun
+- PART 7 - Deploying the application to GCP
+- PART 8 - Adding AgentOps
+- PART 9 - Wrapping up
 
 And I 100% guarantee this is going to be incredible
 
 For those interested in coding along, here’s what you’ll need…
 
 - A) A PC aka: a Laptop or Desktop
-- B) This PC will need 2 applications installed onto it namely Docker and VSCode
-- C) After you have VSCode installed you’ll need to add 2 VSCode extensions namely the “Docker” extension and “Dev Containers” extension
+- B) This PC will need these 2 applications installed onto it: Docker and VSCode
+- C) And after you have VSCode installed you’ll need to add 2 VSCode extensions namely the “Docker” extension and “Dev Containers” extension
 - D) A GitHub account
 - E) A GCP account
 - F) An OpenAI account
 - G) A Mailgun Account
 - I) An AgentOps Account
-- J) And optionally: You’ll need a domain
+- J) Optionally: You’ll need a domain
 
-OK I know this sounds like a lot but it’s not too bad. Let me break it down if you’re new to all this…
+I know this sounds like a lot but it’s not that bad. Let me break it down…
 
-For reference, I’ll play a short clip showing how I installed Docker, VSCode, and the 2 VSCode Extensions onto my M1 Macbook Pro at the end of this intro (so you get a feel for how easy it was for me) and even though my machine is Mac-based, the broad strokes of what you’ll see in that clip should apply even if you’re machine is Windows or Linux-based.
+To give you a feel for how easy it was for me to install Docker, VSCode, and these 2 VSCode Extensions onto my M1 Macbook Pro, I’ll be playing a clip shortly that shows how I did it…
 
-You can get a GitHub account by coming over to https://github.com/ and signing up
+Even though my machine is Mac-based, the broad strokes of what you’ll see in that clip should apply even if you’re machine is Windows or Linux-based.
 
-And you can get a GCP account by coming over to https://cloud.google.com and signing up. OR by simply pressing the “Activation” button on the https://cloud.google.com/cloud-console page if you already have a gmail account you’d like to use GCP with…
+In regards to the GitHub account, you can get an account by coming over to https://github.com/ and signing up
 
-GCP usually offers free credits on signup or activation PLUS the cost of what we’re doing here will be in the pennies. So the GCP side of things should be practically free assuming you tear down the project we create within a few days of building it. We will show how to tear down the GCP project at the end of this video.
+In regards to GCP, you can get an account by coming over to https://cloud.google.com and signing up. OR you can simply press the “Activation” button on the https://cloud.google.com/cloud-console page if you already have a gmail account you’d like to use GCP with…
 
-When we get to the 2nd half of this walkthrough (aka PART 5) we will need…
+GCP usually offers free credits on signup or activation PLUS the cost of what we’re doing here will be in the pennies so the GCP side of things should be practically free assuming you tear down the project we create within a few days after building it. We’ll show how to tear down the GCP project at the end of this video.
+
+When we get to the 2nd half of this walkthrough (aka PART 5) we will need the remaining prereqs…
+
+Those being…
 
 - An OpenAI account
     - For powering our LLM-based Agents
@@ -69,18 +74,14 @@ When we get to the 2nd half of this walkthrough (aka PART 5) we will need…
 
 - And optionally: a Domain
 
-    - Hopefully you have an extra domain handy but, in case you don’t, you can purchase one from any Domain Registrar that lets you edit the domain’s DNS records (for example I’ll be using Amazon Route 53) 
-    - By adding a few entries the domain’s DNS records we can quote unquote “verify it” 
-    - Without verifying a domain that we own as the sender of our emails, the messages we send with Mailgun will probably land in the recipient’s SPAM folder
-    - So if you don’t mind the A.I. generated emails we create being delivered to SPAM, then you don’t need a domain, but if you do want them to be delivered to INBOX proper then you will need a domain. If you’re confused, don’t worry, hold tight cause this will make a lot of sense in PART 6.
+    - Hopefully you have an extra domain handy, but, in case you don’t, you can purchase one from any Domain Registrar that lets you edit the domain’s DNS records (for example I’ll be using Amazon Route 53) 
+    - By adding a few entries to the domain’s DNS settings we can “verify it” 
+    - Without verifying a domain we own as the sender of our emails, the messages we send with Mailgun will probably land in the recipient’s SPAM folder
+    - So if you don’t mind the A.I. generated emails we create being delivered to SPAM, you don’t need a domain, BUT if you do want them delivered to INBOX proper, you will need a domain.
 
-So once again, if you want to code along, you’ll need a computer with Docker and VSCode installed (and make sure VSCode has the `Docker` and `Dev Containers` extensions too) and you’ll also need a GitHub account & a GCP account..
+The design of this application we’re going building is modular so you could switch out certain components for others you prefer BUT this is what we’ll be using for demo purposes
 
-The remaining prerequisites (like the OpenAI, Mailgun, & AgentOps accounts plus the domain name) can wait till PART 5…
-
-The design of this application we’re going building is pretty modular so you could switch out certain components for others if you prefer BUT this is what we’ll be using for demonstration purposes
-
-Let me know in the comments if you have any setup or installation roadblocks and you can also enter the details of the issues you come across into either Google or ChatGPT for further assistance.
+If you have any setup or installation roadblocks leave a comment and for additional support you can enter the details of the issues you come across into either Google or ChatGPT.
 
 Good luck and I’ll see you in part 1 when you’re ready to go : )
 
@@ -94,10 +95,10 @@ Welcome! So I’m assuming you have the following prerequisites set up on your p
 - VSCode
 - The `Docker` VSCode extension
 - The `Dev Containers` VSCode extension
-- Credentials for connecting to a GitHub account
-- And credentials for using a GCP account
+- A GitHub account
+- And a GCP account
 
-Let’s get started by creating a folder somewhere on our machine that keeps us organized (for example the Desktop or Home folder perhaps)…
+Let’s get started by creating a folder somewhere on our machine (for example the Desktop or Home folder perhaps)…
 
 I’m going to call my folder (`mkdir hthtogcrj`)
 
@@ -105,13 +106,13 @@ and let’s open this folder using VSCode…
 
 If we pop open VSCode’s terminal we can confirm where we are on the file system…
 
-```pwd``` and we are indeed in the empty folder we just created
+```pwd``` and indeed we’re in the empty folder we just created
 
 As we’re starting from scratch, let’s 1st set up our “Dev Container”…
 
 If you unfamiliar with the term “Dev Container” hold tight, it’ll make sense in a few minutes…
 
-Inside of this empty folder let’s create the following folder and files…
+Inside this empty folder let’s create the following folder and files…
 
 ```
 mkdir .devcontainer
@@ -126,13 +127,13 @@ The code we just added looks a bit hectic but it’s actually quite useful.
 
 These files will build a little mini-computer that will run on top of our actual computer. This mini-computer, called a “Docker Container”, is where we will write all the code for powering our application
 
-When we’re finished with this walkthrough, we can delete this “Docker Container” (or mini-computer) and our base machine (aka our laptop or Desktop or whatever we’re using) will be left clean as if nothing ever happened…
+When finishing this walkthrough, we can delete this “Docker Container” (or mini-computer) and our base machine (aka our laptop or Desktop or whatever we’re using) will be left clean as if nothing ever happened…
 
-In addition to helping us stay organized, “Docker Containers” are also compatible with Cloud platforms like AWS, GCP, and Azure so using them for development will make running our application in the cloud easy as we’ll shortly see.
+In addition to helping us stay organized, the use of “Docker Containers” is highly compatible with Cloud platforms like AWS, GCP, and Azure. So using them for development will make running our application in the cloud easy as we’ll shortly see.
 
-The Dockerfile.dev does most of the work of configuring our “Docker Container” while the devcontainer.json file mostly outlines how VSCode should connect to the “Docker Container” and allow us to edit the files inside of it.
+To shed some light on what these files are doing, the Dockerfile.dev does most of the work of configuring our “Docker Container” while the devcontainer.json mostly outlines how VSCode should connect to the “Docker Container” and allow us to edit files inside of it.
 
-The Dockerfile.dev is creating a “mini-computer” that comes with Python, .git, gcloud, and Docker installed WHILE the devcontainer.json file is telling VSCode to, by default, open the /code folder in this “mini-computer” when we want to view files inside of it among other things like, for example, on lines 24 & 25 we’re are configuring the Docker client installed in the “Docker Container” to forward commands to the Docker server running on our base machine…
+The Dockerfile.dev will create a “mini-computer” that comes with Python, .git, gcloud, and Docker installed WHILE the devcontainer.json file is telling VSCode to, by default, open the /code folder in this “mini-computer” when we want to view the files inside of it. Let’s not get too in the weeds but we can also see on lines 24 & 25 that we’re configuring the Docker client installed in the “Docker Container” to forward commands to the Docker server running on our base machine…
 
 https://docs.docker.com/get-started/docker-overview/#docker-architecture
 
@@ -140,23 +141,23 @@ When we use a “Docker Container” for the purpose of developing applications 
 
 In the coming sections, we will use another “Docker Container” that is almost identical to our “Dev Container” for running our application in GCP. We will refer to this 2nd container as our “Production Container”. Don’t sweat it if this confusing. It’ll makes sense shortly. Let’s move on.
 
-If we type these key strokes into VSCode, SHIFT + COMMAND + P, we’ll pop open the “Command Palette” (as it’s so called) and we can select an option called “Reopen in Container” to trigger a script provided by the “Dev Containers” extension that will build a “Docker Container” based on the configuration we’ve specified.
+If we type these key strokes into VSCode, SHIFT + COMMAND + P, we’ll pop open the “Command Palette” (as it’s so called) and we can select an option that says “Reopen in Container” to trigger a script provided by the “Dev Containers” extension that will build a “Docker Container” based on the configuration we’ve specified.
 
-Before we select this option though, let’s look at the Docker Desktop GUI that comes with Docker to compare the before and after…
+Before we select this option though, let’s take a look at the Docker Desktop GUI that comes with Docker to compare the before and after…
 
-At the moment we see that the Docker GUI shows no Containers, Images, or Volumes.
+At the moment we see the Docker GUI shows no Containers, Images, or Volumes.
 
-Now let’s select the “Reopen in Container” option and see what happens…
+Now let’s select the “Reopen in Container” option and watch what happens…
 
-You will have a wait few moments the first time you build this “Dev Container” BUT after it’s built, launching it will only take a few seconds…
+You will have a wait few moments the first time you build a “Dev Container” BUT after it’s built, launching it will only take a few seconds…
 
 Now that the Container is finished building let’s take another look at the Docker Desktop GUI…
 
-We see blah, blah, blah. This will make sense shortly…
+We see blah, blah, blah. What this all means will make sense shortly…
 
-If we come back to VSCode and pop open the built-in terminal again to confirm where we are on the file system, we will see that VSCode is connected to the /code folder at the root of the Dev container and NOT the original folder we first opened.
+If we come back to VSCode and pop open the built-in terminal again to confirm where we are on the file system, we see that VSCode is connected to the /code folder at the root of the Dev container and NOT the original folder we first opened.
 
-We will continue developing our application inside of this Dev Container…
+We will be building the PRODUCTION application mentioned at the start inside of this Dev Container…
 
 Let’s quickly confirm all the software we’ll need is installed…
 
@@ -169,16 +170,16 @@ docker version
 
 And everything’s looking good.
 
-Before moving to PART 2, let’s save our progress in a remote .git repository. We will be using GitHub.
+Let’s save our progress in a remote .git repository. We will be using GitHub.
 
 - https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials
 - https://docs.github.com/en/get-started/getting-started-with-git/caching-your-github-credentials-in-git
 
-There are multiple ways to authenticate a .git client with remote repository, for example, after creating a repo in GitHub you can connect to it via SSH or HTTPS protocol. Dev Containers offer built-in support for connecting to .git repos via both of these protocols BUT for demonstration purposes we’ll use HTTPS. Long story short, how this works is the credentials that are set up on our base machine get shared with the “Dev Container” automatically in the background.
+Dev Containers offer built-in support for connecting to .git repos via both SSH AND HTTPS protocol BUT for demonstration purposes we’ll use HTTPS. The long story short of how this works is the credentials set up on our base machine get shared with the “Dev Container” automatically behind the scenes.
 
 Let me show you what I mean…
 
-1st let’s create a repo in GitHub — I’ll call mine `hthtogcrj`. And then let’s configure our project folder to use this GitHub repository for storing a backup of all the changes we make by entering the following commands…
+1st let’s create a repo in GitHub — I’ll call mine `hthtogcrj`. And then let’s configure our project folder to use this GitHub repository for storing a backup of all the changes we make along our journey by entering the following commands…
 
 ```
 git init
@@ -191,7 +192,7 @@ FYI/SIDENOTE/TMI: I think the corresponding credential management applications o
 
 Anyways…
 
-If I re-authenticate in the base environment using a GitHub Personal Access Token (PAT) that has permissions attached to it to view and edit the contents of the `hthtogcrj` repo we just created, 
+If I re-authenticate with GitHub in my base environment using a GitHub Personal Access Token (PAT) that has permissions attached to it to view and edit the contents of the `hthtogcrj` repo we just created, 
 
 For now, I’ll just `Contents` and `Metadata` permissions. We can always add more permissions later if needed…
 
@@ -559,19 +560,61 @@ Fabulous. Now we know how to run CRON Jobs in the Cloud…
 
 ***INTERMISSION***
 
-PART 5 - Adding the CrewAI Agents
+PART 5 - Adding CrewAI Agents
 
-MOVE AS FAST AS POSSIBLE THROUGH THIS
+- Update the requirements.txt file to contain the following 3rd-party packages as well as these specific versions…
+    - pip install -r requirements.txt
+- Next let’s update the `main.py` file to include a bunch of CrewAI-related code…
+    - And you can see we’re importing a helper function and a pydantic type as well…
+    - So let’s add the files for supporting these imports…
+        - touch helpers/replace_yaml_variables.py
+        - mkdir application_schema
+        - touch application_schema/news_results.py
+        - mkdir config
+        - touch config/tasks.yaml
+        - touch config/agents.yaml
 
-- Add in Agents
-- Integrate OpenAI
-- Test locally
+- If you look closely at this config you can see we are creating a group of agents that are specialized in reporting information about the niche of Haitian Global News
+- You can easily tweak this config to report information about whatever niche matters to you
+- For example, at the end of this walkthrough we’ll adjust these prompts to focus on reporting the latest news in the world of Insurance Technology
+- Anyways!
+- Let’s now try running this script and see what happens - `python main.py`
+- We can see an ERROR has been thrown due to a missing OPENAI_API_KEY
+    - CrewAI, aka the Multi-Agent framework we’re using, supports a number of LLMs but by default is set up to use OpenAI
+    - If your new to all this Agent stuff, here’s a quick little diagram that sheds some light on what I just said…
+        - An Agent, in the context of this video, is like a virtual person and an LLM acts as the virtual person’s brain
+    - You can get an OPENAI_API_KEY by coming over to https://platform.openai.com/ and signing up…
+    - And after you’re signed up, make sure to add some credits to your balance. OpenAI’s API is pay-per-use it’s like a gas station so you will need some credits.
+    - I recommend adding whatever the minimum allowed amount is as the cost of what we’ll be doing will only be in the pennies
+    - After you have some credits added come over to the Dashboard > API keys section and create an API key
+        - Let’s copy this API key’s value into our project by adding a new entry in the .env file that reads, in all caps, OPENAI_API_KEY=<API_KEY_HERE>
+    - Then we add these lines to the top of our `main.py` file to make the entries in the .env file available to our code
+    - And when that’s all set up let’s run our script again
+    - `python main.py`
+    - This are now looking good…
+    - If we take a close look at this code, we can see we’re creating 2 Agents - A Manager Agent and a Researcher Agent…
+    - And 1 Task - that being to perform research across a list of web pages
+    - This configuration gets tied together with the Crew object provided by CrewAI
+        - As of the time of recording CrewAI let’s you run your Agents in 2 modes: Sequential and Hierarchical
+        - Sequential Mode means the Agents will perform the tasks outlined in the tasks.yaml file sequentially one-by-one
+            - In Sequential Mode, you must manually map each task to one of the agents in your project 
+    - Hierarchical Mode, which is what we’re using at the moment, means we delegate one of the Agents in our project as the “Manager” of the other Agents. We then assign tasks to the Manager Agent who will break the task up into sub-tasks as needed and automatically assign each sub-task to one or more Agents in the Crew.
+    - Depending on the LLM and other implementation details, the reliability of Hierarchical Mode can be either impressive or atrocious BUT for the job of synthesizing information across a number of web pages in a particular niche, I found Hierarchical Mode to be worthy match
+
+    - Let’s run our Crew a few times to get feel for what it’s doing…
+    - Each time we run our Crew we’ll add another website to this list and review the output
+
+- And yea things generally look like they are working so let’s move on to part 6 where will will send this A.I. research report via email to a list of subscribers
+
+Before we move on though let’s save our code in GitHub…
+
+We don’t need to save the report.md file so let’s add it to the .gitignore before committing and pushing and now we’re ready to move on
 
 PART 6 - Add Mailgun
 
-Next up we’ll add emails to our application…
+Next up we’ll integrate email into our application…
 
-There are many email providers you could use but for demonstration purpose we will go with Mailgun…
+There are many email providers we could use but for demonstration purpose we will go with Mailgun…
 
 - https://signup.mailgun.com/new/signup
 - After signing up you’ll have to verify your email and/or phone number with Mailgun via an Authorization Code that you’ll receive in either your inbox or on your phone…
@@ -584,18 +627,9 @@ There are many email providers you could use but for demonstration purpose we wi
 - We will be able to send emails FROM this domain TO any email we list as authorized recipients here…
 - To authorize a recipient, we enter and submit its address with this form AND have the owner accept the invitation that they’ll receive via email
 - After we authorize some email we own (by own I mean we have access to its inbox), let’s add the following code to our application…
-    - requirements.txt
-```
-python-dotenv===1.0.1
-```
-    - main.py
-```
-from dotenv import load_dotenv
-load_dotenv()
-…
-send_email()
-```
-    - helpers/send_email.py
+
+	
+    - touch helpers/send_email.py
 ```
 import requests
 import os
@@ -610,9 +644,15 @@ def send_email():
         "subject": "Hello",
         "text": "Testing !!! some !!! weirdness"})
 ```
-        - 
-    - helpers/send_email.py
+
+    - main.py
+```
+send_email()
+```
+
 - After adding this code, we can test our script again and we should receive an email in our SPAM folder
+- Out of courtesy of the time let’s comment out and just test that the email API works…
+- python main.py
 - If you don’t mind finishing this walkthrough with emails being delivered to SPAM then skip ahead to PART 7
 - BUT if you’d like the emails to be delivered to INBOX proper, here are the steps you’ll need to take…
     - Come over to the https://app.mailgun.com/mg/sending/domains page again and click “Add new domain”
@@ -621,30 +661,201 @@ def send_email():
     - Here is what adding these records to my DNS settings in AWS Route 53 looks like for me reference
     - And after this records are added to our DNS we can click `Verify` to have Mailgun confirm that we are indeed the owner of this domain
     - And now when we send email with an email from our verified domain as the send the emails should land in our INBOX proper
+        - noreply@wishbliss.link
 
 If you have issues purchasing a domain or verifying it with your email provider, leave a comment or paste detailed descriptions of your issues into either Google or ChatGPT. If you’ve gotten this far, don’t be discouraged. Setting up emailing from a custom domain is not too difficult but can be tricky if you do something slightly off.
 
 SIDENOTE: If someone in the audience knows of a simpler way to implement email integrations please leave a comment and I’ll pin it to the top of the comments
 
-PART 7 - 
+PART 7 - Deploying the application to GCP
 
-- Deploy the complete application
-- Deploy the Agents to GCP
-- Showcase how to add environment secrets
-- Adjust the CICD script
+Now we’re going to most fast through making the remaining changes to this PRODUCTION APPLICATION. So pay attention closely!
 
-PART 8 - 
+First of all, we don’t want our research report written to a file but instead would like it delivered to us via email
 
-This will be cake
+- Let’s edit the params of our Crew class in the main.py file like so…
+	```
+	output_pydantic=NewsResults,
+        output_file='report.json'
+	```
+    - This change tells the Manager in our Crew to output a very specific data structure when completing tasks…
+    - Let’s test this out so you see what’s happening
+    - We see that a “structured” JSON output has been generated by our crew
+    - Now we can combine the flexibility of LLMs with the predictability of traditional programming so transform this JSON output into an email with the following code…
+        - And we’ll need to add a few more helper functions
+        - `touch helpers/is_valid_email.py`
+        - `touch helpers/format_news_for_email.py`
+    - And now if we test our script again let’s see what happens…
+    - PLUS update main.py & send_email.py
+    - `python main.py`
 
-- Add AgentOps
+GREAT!!!
+
+Next, let’s deploy this application to a Google Cloud Run Job so we automatically get regular reports from our Crew regardless of if our computer is turned on or off…
+
+- In order for that to work though we will need to make our OPENAI_API_KEY and MAILGUN_API_KEY available to any application running in our GCP project
+- And here is how we do that…
+- GCP offers another API/product in its suite dedicated to storing sensitive data like API_KEYS and passwords
+- That product is called Secret Manager
+
+```
+gcloud services enable secretmanager.googleapis.com
+gcloud services list --enabled
+```
+
+Now that this API is enabled on our GCP account, we can store sensitive data in “Secret Manager” like so…
+
+https://console.cloud.google.com/security/secret-manager?referrer=search&hl=en&project=hthaogcrj-practice
+
+```
+echo -n "<SECRET>" | gcloud secrets create $SECRET_NAME --data-file=-
+```
+
+This is the command template so this is how we would add our OPENAI_API_KEY to “Secret Manager”
+
+& this is how we would add our MAILGUN_API_KEY to “Secret Manager”
+
+```
+echo -n "<YOUR_OPENAI_API_KEY>" | gcloud secrets create OPENAI_API_KEY --project $PROJECT_ID --data-file=-
+```
+
+https://console.cloud.google.com/security/secret-manager?referrer=search&hl=en&project=hthaogcrj-practice
+
+```
+echo -n "<YOUR_MAILGUN_API_KEY>" | gcloud secrets create MAILGUN_API_KEY --data-file=-
+```
+
+FYI, as a quick sidenote, this is the command for how to update a secret to have a new value…
+
+```
+echo "YOUR_NEW_SECRET_VALUE" | gcloud secrets versions add OPENAI_API_KEY --data-file=-
+```
+
+And the way we load these secret values into our Cloud Run is like so…
+
+We add a new flag called `—set-secrets` to the `gcloud run jobs deploy` command of our CICD script and pass in a list of ENVIRONMENT_VARIABLES for our job by referencing them in “Secret Manager”
+
+--set-secrets "OPENAI_API_KEY=projects/${{ env.PROJECT_NUMBER }}/secrets/OPENAI_API_KEY:latest,MAILGUN_API_KEY=projects/${{ env.PROJECT_NUMBER }}/secrets/MAILGUN_API_KEY:latest" \
+
+Let’s push this code to GitHub and then trigger our application in Cloud Run Jobs to confirm we still receive an email…
+
+OK! So thing are looking good but we did get an error saying our “Default compute service account” needs permissions to access our secrets
+
+The “Default compute service account” outlines the permissions given to the Cloud Run API running in our GCP project
+
+So long story short is the following 2 commands will grant our “Default compute service account” permissions to access the two 2 secrets we added to “Secret Manager” 
+
+Make sure the PROJECT_NUMBER variable is defined in your shell
+
+gcloud secrets add-iam-policy-binding OPENAI_API_KEY \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+gcloud secrets add-iam-policy-binding MAILGUN_API_KEY \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+
+Now that we’ve granted these permissions let’s do one more thing that comes to my mind…
+
+Because Multi-Agent systems spit out a lot of text, I often see them consume a lot of memory so let’s double the default amount of memory allocated to the container running our job before redeploying by adding another flag to the deploy step of our CICD script
+
+--memory 1Gi
+
+And now let’s re-run our CICD script in GitHub…
+
+WHILE THE CICD PIPELINE IS IN FLIGHT, show how you might need to tweak a few  “meta” parameters (as we’ll call them) depending on the details of your job ie:
+
+- cpu
+- memory
+- maxRetries
+- timeoutSeconds
+
+Alright that looks like it worked!
+
+Let’s trigger our job to confirm we receive an email
+
+`gcloud run jobs execute job-1 --region us-east1`
+
+And we do indeed see an email arrive in our inbox with an A.I. generated report
+
+Let’s move on…
+
+Next up we’ll add a Monitoring Tool called AgentsOps. AgentsOps will give us quicker and easier insight into how our A.I. Agents are performing compared to observing them through the GCP console. Once you get to point where you have dozens or even hundred of Agents working for you, you’re going to need a tool like AgentOps to easily monitor them all.
+
+PART 8 - Adding AgentOps
+
+The process of integrating with AgentOps is very similar to the process of integrating with OpenAI’s platform
+
+First we come over to https://app.agentops.ai/ and sign up if we haven’t already
+
+Then we have to find the page where we can provision API keys
+
+I found it by opening the “Profile” dropdown and selecting the “API keys” option
+
+And you should see a default API key that you can copy
+
+And let’s add it into our .env file by writing on a new line in all caps `AGENTOPS_API_KEY=
+
+After we have that sorted out we have to install the “agentops===0.3.14” package from pypi.org
+
+And then import initialize the agentops tracker like so…
+
+```
+import agentops
+agentops.init(os.getenv("AGENTOPS_API_KEY"))
+```
+
+Make sure to add it to the top of the main.py file so tracking is setup before our Agents get to work
+
+And if we run our script we should see some feedback from AgentOps in the console
+
 - Showcase the AgentOps dashboard
 
-DONE
+So to enable AgentOps in GCP aka our Production Environment we have to add the API key as another secret in “Secret Manager”
 
-EDIT
+```
+echo "YOUR_NEW_SECRET_VALUE" | gcloud secrets create AGENTOPS_API_KEY --data-file=-
+gcloud secrets add-iam-policy-binding AGENTOPS_API_KEY \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
 
+--set-secrets “AGENTOPS_API_KEY=projects/${{ env.PROJECT_NUMBER }}/secrets/AGENTOPS_API_KEY:latest” \
+
+gcloud run jobs execute job-1 --region us-east1
+
+NOTE TO SELF: After AgentOps is showing the session running in GCP
+
+Alright! Now let’s move on to the final section!
+
+PART 9 - Wrapping things up
+
+To wrap things up, let’s do 3 things
+
+First let’s update our agents to focus on a different niche so you understand how to customize this application for your own purpose and then set a daily cron job so we automatically get reports delivered to us daily!
+
+Second, let’s re-enable the CRON job and adjust the CRON expression to trigger out Agents once a day…
+
+And third let’s make the list of email recipients a secret so we don’t dox whoever is receiving these reports…
+
+```
+echo “tad@cmdlabs.io” | gcloud secrets create AI_NEWS_RECIPIENTS --data-file=-
+gcloud secrets add-iam-policy-binding AI_NEWS_RECIPIENTS \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+--set-secrets “AI_NEWS_RECIPIENTS=projects/${{ env.PROJECT_NUMBER }}/secrets/AI_NEWS_RECIPIENTS:latest” \
+
+gcloud run jobs execute job-1 --region us-east1
+
+So that’s all folks. We now have a team of A.I. News Reporters synthesizing information for us across a number of sources.
+
+In conclusion, this entire video can be summed up in 3 words: Welcome to PRODUCTION!
+
+BONUS SECTION: As promised, here’s how you can easily tear down a GCP project. Click SHUT DOWN to destroy all the resources in the project.
 
 STRATEGY - Record each part as a separate Camtasia project…
 
-Combine them in Premier
+Then combine them in Premier
