@@ -49,3 +49,4 @@ jobs:
           --memory 1Gi \
           --region ${{ env.CLOUD_RUN_REGION }} \
           --project ${{ env.PROJECT_ID }}
+          --max-retries 3
