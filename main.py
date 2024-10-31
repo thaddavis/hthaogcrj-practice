@@ -1,4 +1,8 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import json
+import os
 from datetime import datetime
 
 from crewai import Agent, Crew, Task, Process
@@ -7,12 +11,11 @@ import yaml
 from helpers.format_news_for_email import format_news_for_email
 from helpers.is_valid_email import is_valid_email
 from helpers.replace_yaml_variables import replace_yaml_variables
+from helpers.send_email import send_email
 from application_schema.news_results import NewsResults
 
-from dotenv import load_dotenv
-
-from helpers.send_email import send_email
-load_dotenv()
+import agentops
+agentops.init(os.getenv("AGENTOPS_API_KEY"))
 
 # vvv YAML Configuration vvv
 current_date = datetime.now().strftime("%Y-%m-%d") # Include current date for context
