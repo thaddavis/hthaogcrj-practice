@@ -1,29 +1,27 @@
 # PART 1 - Setting up our Dev Container
 
-Welcome! So I’m assuming you have the following prerequisites set up on your personal computer…
+Welcome! So I’m assuming you have at least these prerequisites set up on your computer…
 
 - Docker
-- VSCode
-- The `Docker` VSCode extension
-- The `Dev Containers` VSCode extension
-- Credentials for connecting to a GitHub account
-- And credentials for using a GCP account
+- VSCode or Cursor (I’ll be using VSCode)
+- The `Docker` extension
+- The `Dev Containers` extension
+- A GitHub account
+- And a GCP account
 
-Let’s get started by creating a folder somewhere on our machine that keeps us organized (for example the Desktop or Home folder perhaps)…
+Let’s get started by creating a folder somewhere on our machine (for example somewhere in the Home folder perhaps, it’s up to you)…
 
 I’m going to call my folder (`mkdir hthtogcrj`)
 
-and let’s open this folder using VSCode…
+Let’s open this folder using our editor…
 
-If we pop open VSCode’s terminal we can confirm where we are on the file system…
+And if I pop open VSCode’s terminal to confirm where we are on the file system you can see we’re in the empty folder we just created (pwd)
 
-```pwd``` and we are indeed in the empty folder we just created
+Let’s now set up our “Dev Container”…
 
-As we’re starting from scratch, let’s 1st set up our “Dev Container”…
+If you unfamiliar with the term “Dev Container”, hold tight, it’ll make sense in a few minutes…
 
-If you unfamiliar with the term “Dev Container” hold tight, it’ll make sense in a few minutes…
-
-Inside of this empty folder let’s create the following folder and files…
+Inside of this empty folder, we’ll create the following folder and files…
 
 ```
 mkdir .devcontainer
@@ -31,46 +29,50 @@ touch .devcontainer/devcontainer.json
 touch Dockerfile.dev
 ```
 
-And populate the devcontainer.json with this content 
+And let’s populate the devcontainer.json with this content 
 And populate the Dockerfile.dev with this content
 
 The code we just added looks a bit hectic but it’s actually quite useful.
 
-These files will build a little mini-computer that will run on top of our actual computer. This mini-computer, called a “Docker Container”, is where we will write all the code for powering our application
+These files will build a little mini-computer that will run on top of our actual computer. This mini-computer, called a “Container”, is where we’ll write almost all the code for powering our application
 
-When we’re finished with this walkthrough, we can delete this “Docker Container” (or mini-computer) and our base machine (aka our laptop or Desktop or whatever we’re using) will be left clean as if nothing ever happened…
+When finishing this walkthrough, we can easily delete this “Container” (or mini-computer) to keep our base machine (aka our laptop or Desktop or whatever we’re using) clean as if nothing ever happened to it…
 
-In addition to helping us stay organized, “Docker Containers” are also compatible with Cloud platforms like AWS, GCP, and Azure so using them for development will make running our application in the cloud easy as we’ll shortly see.
+In addition to helping us stay organized, the use of “Containers” is highly compatible with Cloud platforms like AWS, GCP, and Azure. So using them for development will make running our application in the cloud easy as we’ll shortly see.
 
-The Dockerfile.dev does most of the work of configuring our “Docker Container” while the devcontainer.json file mostly outlines how VSCode should connect to the “Docker Container” and allow us to edit the files inside of it.
+To shed some light on what these files are doing, the Dockerfile.dev does most of the work of configuring our “Container” while the devcontainer.json mostly outlines how our editor should connect to this “Container” and allow us to edit the files inside of it.
 
-The Dockerfile.dev is creating a “mini-computer” that comes with Python, .git, gcloud, and Docker installed WHILE the devcontainer.json file is telling VSCode to, by default, open the /code folder in this “mini-computer” when we want to view files inside of it among other things like, for example, on lines 24 & 25 we’re are configuring the Docker client installed in the “Docker Container” to forward commands to the Docker server running on our base machine…
+If we take a closer look at the Dockerfile.dev, we see it’s creating a “mini-computer” for us that comes installed with Python, .git, gcloud, and a Docker client (we’re installing a Docker client so we can send instructions to the Docker server on our base machine from inside the Container)
+
+If we take a closer look at the devcontainer.json, we see it’s telling VSCode to open the /code folder in this “mini-computer” when attaching to it.
 
 https://docs.docker.com/get-started/docker-overview/#docker-architecture
 
-When we use a “Docker Container” for the purpose of developing applications in it, we call it a “Dev Container”…
+FYI: When we use a “Docker Container” for the purpose of developing applications in it, we call it a “Dev Container”…
 
-In the coming sections, we will use another “Docker Container” that is almost identical to our “Dev Container” for running our application in GCP. We will refer to this 2nd container as our “Production Container”. Don’t sweat it if this confusing. It’ll makes sense shortly. Let’s move on.
+In the coming sections, we will use another “Container”, almost identical to this “Dev Container”, but for running our application in GCP. We’ll refer to this 2nd container as our “Production Container”. 
 
-If we type these key strokes into VSCode, SHIFT + COMMAND + P, we’ll pop open the “Command Palette” (as it’s so called) and we can select an option called “Reopen in Container” to trigger a script provided by the “Dev Containers” extension that will build a “Docker Container” based on the configuration we’ve specified.
+Don’t worry if this is confusing to you. It’ll all make sense shortly. Let’s move on…
 
-Before we select this option though, let’s look at the Docker Desktop GUI that comes with Docker to compare the before and after…
+If we type these key strokes into VSCode or Cursor, SHIFT + COMMAND + P, we’ll pop open the “Command Palette” (as it’s so called) and we can search & select an option that says “Reopen in Container” to trigger a script provided by the “Dev Containers” extension that will build a “Docker Container” based on the configuration we’ve just specified.
 
-At the moment we see that the Docker GUI shows no Containers, Images, or Volumes.
+Before we select this option tho, let’s take a look at the Docker Desktop UI that we got when installing Docker to can compare the before and after of happens when “Reopening our project folder” in a container”…
 
-Now let’s select the “Reopen in Container” option and see what happens…
+At the moment we see that the Docker GUI shows no Containers, no Images, and no Volumes.
 
-You will have a wait few moments the first time you build this “Dev Container” BUT after it’s built, launching it will only take a few seconds…
+Let’s now select the “Reopen in Container” option in the command palette and watch what happens…
 
-Now that the Container is finished building let’s take another look at the Docker Desktop GUI…
+You will have a wait few moments the first time you build a “Dev Container” BUT after it’s built, launching it will only take a few seconds…
 
-We see blah, blah, blah. This will make sense shortly…
+After the Container has finished building let’s take another look at the Docker Desktop UI…
 
-If we come back to VSCode and pop open the built-in terminal again to confirm where we are on the file system, we will see that VSCode is connected to the /code folder at the root of the Dev container and NOT the original folder we first opened.
+We see blah, blah, blah. What this all means will make sense shortly…
 
-We will continue developing our application inside of this Dev Container…
+If we come back to VSCode and pop open the built-in terminal again to confirm where we are on the file system now, we see that VSCode is connected to the /code folder at the root of the Dev container and NOT the original folder we first opened.
 
-Let’s quickly confirm all the software we’ll need is installed…
+We’ll be building our PRODUCTION application inside of this Dev Container…
+
+Let’s quickly confirm all the software we’ll need is indeed installed…
 
 ```sh
 python --version
@@ -81,39 +83,40 @@ docker version
 
 And everything’s looking good.
 
-Before moving to PART 2, let’s save our progress in a remote .git repository. We will be using GitHub.
+Let’s save our progress so far in a remote .git repository on GitHub.
 
 - https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials
 - https://docs.github.com/en/get-started/getting-started-with-git/caching-your-github-credentials-in-git
 
-There are multiple ways to authenticate a .git client with remote repository, for example, after creating a repo in GitHub you can connect to it via SSH or HTTPS protocol. Dev Containers offer built-in support for connecting to .git repos via both of these protocols BUT for demonstration purposes we’ll use HTTPS. Long story short, how this works is the credentials that are set up on our base machine get shared with the “Dev Container” automatically in the background.
+“Dev Containers” built with VSCode offer support for connecting to .git repos via both ssh AND https BUT for demonstration purposes we’ll use HTTPS. The long story short of how this works is the .git credentials set up on our base machine get shared with the “Dev Container” automatically behind the scenes.
 
 Let me show you what I mean…
 
-1st let’s create a repo in GitHub — I’ll call mine `hthtogcrj`. And then let’s configure our project folder to use this GitHub repository for storing a backup of all the changes we make by entering the following commands…
+1st let’s create a repo in GitHub — I’ll call mine `hthtogcrj`. And then let’s configure our project folder to use this GitHub repository for storing backups of all the code we write along our journey by entering the following commands…
 
 ```
 git init
 git remote add origin https://github.com/thaddavis/hthaogcrj-practice.git
 ```
 
-If I delete the credential for github.com in MacOS’s built in credential management application, called Keychain Access, you’ll see that my attempts to push code to the repo fail both on my base machine as well as in the Dev Container…
+If I delete the credential for github.com in my MacOS’s built in credential management application, Keychain Access, you’ll see my attempts to push code to the repo fail on my base machine as well as in the Dev Container…
 
-If I re-authenticate in the base environment using a GitHub Personal Access Token (PAT) that contains the permissions to view and edit the contents of this repo we just created, we can see the .git commands now work on both the base machine and in the Dev Container…
+FYI/SIDENOTE/TMI: If you’re following along as a Windows or Linux fan, the corresponding credential management application I believe would be Credential Manager and libsecret respectively…
 
-If we need more permissions attached to this PAT we can always add them later in the GitHub console…
+Anyways, if I re-authenticate with GitHub in my base environment, I’ll use GitHub’s new Personal Access Token (PAT) feature to only include `Contents` and `Metadata` permissions for the repo we just created
 
-In practical terms here’s the difference between the authentication options offered by GitHub…
+And now, we can see that the .git push commands now work on both the base machine and in the Dev Container…
 
-- Authenticating via SSH protocol is the most permissive. It’ll allow you to interact with all repos in your GitHub account
-- Authenticating via HTTPS offer fine-grained access control. It allows you to specify exactly which data in your GitHub account a machine can access
+We probably won’t need to use this PAT again but just in case we do store it somewhere safe for example I’ll store it in a .env file at the root of the project. Worst case scenario, you’ll have to generate a new one if you lose it.
 
-Because this video is NOT a deep dive on GitHub, we’ll leave it there…
+```
+touch .env
+```
 
-If you have issues connecting to your remote .git repository in the “Dev Container”, you can use a terminal on your host machine for interacting with GitHub as PLAN B.
+We will be storing sensitive data in this .env file, let’s add a .gitignore to make sure it never gets uploaded to GitHub
 
-So let’s save all our code so far.
+And Because this video is NOT a deep dive on GitHub, we’ll leave it there for now…
 
-<FIRST_GIT_TAG> and include README.md too 🔑
+PRO TIP: If you have issues connecting to your remote .git repository from inside the “Dev Container”, just use a terminal on your host machine for interacting with GitHub as backup.
 
-And no that we have our code stored in GitHub let’s continue on to PART 2!
+Now let’s move on to PART 2!

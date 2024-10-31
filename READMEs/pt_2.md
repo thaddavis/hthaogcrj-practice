@@ -1,24 +1,24 @@
-PART 2 - Deploy a simple Job to Google Cloud Run
+# PART 2 - Deploy a simple Job to Google Cloud Run
 
-Let’s now take a look at Google Cloud Run. As we’re starting from scratch, let’s create a new project in GCP. You can do this in multiple ways but let’s use the web console for now…
+In part 2, we’ll learn how to deploy a simple job to Google Cloud Run in preparation for learning how to host our PRODUCTION application.
+
+As we’re starting from scratch, let’s create a new project in GCP. You can do this in multiple ways but let’s use the web console for now…
 
 Come over to https://console.cloud.google.com/welcome
 
-And on the top navbar you should see a dropdown for viewing your projects and after opening the dropdown, you should see a button that says “Create Project”
+And on the top navbar you should see a dropdown for viewing your account’s projects. And after opening the dropdown, you should see a button that says “Create Project”
 
 Click it and let’s create a new project. I’ll call mine `hthtogcrj`
 
-All of the GCP-related work we will implement will be done in this project for organizational purposes and after we’ve finished with this walkthrough, we can release whatever resources we provision inside of it to keep our costs low.
+All of the GCP-related work we’ll implement will be done in this project for organizational purposes.
 
-And after our GCP project is created, come over to the Cloud Run page by either searching and selecting “Cloud Run” in the search bar OR by clicking the Cloud Run option in the sidebar…
+After our GCP project is created, let’s come over to the Cloud Run page by searching “Cloud Run” in the search bar OR by clicking the Cloud Run option in the sidenav…
 
-Google Cloud Run is a managed platform for running “containerized” services and jobs in GCP.
+Cloud Run is a managed platform for running Containers in GCP.
 
-Once your on the Cloud Run page you should see 2 tabs that say “Services” & “Jobs”
+On the Cloud Run page you should see 2 tabs that say “Services” & “Jobs”
 
-In this context, “Services” means long-running applications like HTTP APIs that need to be responsive to incoming requests from the internet
-
-while “Jobs” on the other hand are used for triggering scripts that release the resources needed to run them immediately upon script completion or failure.
+In this context, “Services” means long-running applications like HTTP APIs that need to be responsive to incoming requests from the internet while “Jobs” on the other hand are used for triggering scripts that release the resources needed to run them immediately upon completion or failure.
 
 This video focuses on the use of Cloud Run Jobs so let’s deploy a simple Job to get our feet wet…
 
@@ -29,7 +29,7 @@ First let’s authenticate our Dev container with GCP by typing…
 - `gcloud init` command
 - `gcloud config get-value project`
 
-Next let’s set up our GCP project so we can create Cloud Run Jobs inside of it like so…
+Next let’s set up this GCP project so we can create Cloud Run Jobs inside of it like so…
 
 - `gcloud services list --enabled`
 - `gcloud services enable run.googleapis.com cloudbuild.googleapis.com`
@@ -39,7 +39,7 @@ Moving on, we now have to enter a command that requires the PROJECT_NUMBER of ou
 
 In this instance my PROJECT_NUMBER is 148827868659 and my PROJECT_ID is hthtogcrj.
 
-- You can find these values in the console or by using the terminal…
+- You can find these values in the console by coming over to the Dashboard OR by using the terminal…
     - https://console.cloud.google.com/home/dashboard?project=hthaogcrj-practice
     - gcloud config get-value project
     - gcloud projects describe $PROJECT_ID --format="value(projectNumber)"
@@ -60,114 +60,126 @@ And next, let’s add 7 files to our project. You can do this with VSCode’s UI
 
 I’ll use the terminal…
 
-- `touch main.py requirements.txt .gitignore Procfile Dockerfile.prod cloudbuild.yaml`
+- `touch main.py requirements.txt Procfile Dockerfile.prod cloudbuild.yaml`
 - `mkdir helpers`
 - `touch helpers/say_hello.py`
 
 - And let’s populate the main.py file with this content
 - the requirements.txt with this content
-- the .gitignore file with this content
+- the .gitignore file with this content <!— IMPORTANT —>
     - https://github.com/github/gitignore/blob/main/Python.gitignore
 - the Procfile with this content
 - the Dockerfile.prod with this content
 - the cloudbuild.yaml file with this content
 - And the say_hello.py file with this content
 
-This script we just created doesn’t do anything special BUT it does show you how most Python programming techniques still apply when building Cloud Run Job projects
+This little application we just put together doesn’t do anything special BUT it does show you how most Python programming techniques still apply when building Cloud Run Job projects
 
 LET’S TEST THIS LITTLE APPLICATION OUT IN THE DEV CONTAINER LIKE SO…
 
-- pip install -r requirements.txt
+- pip install -r requirements.txt (As hinted by this warning in our editor)
 - python main.py
 
-PRO TIP: Sometimes when you fix errors and they’re still not going away in VSCode’s UI you gotta restart the language server (SHIFT + COMMAND + P) “Python: Restart Language Server”
+PRO TIP: Sometimes when you fix errors and they’re still not going away in editor’s UI you have to restart the language server for the language you’re programming in (SHIFT + COMMAND + P) “Python: Restart Language Server” - and that should do it
 
 OK! We’ve built a little script, we’ve tested it works, now let’s ship it job to Cloud Run Jobs
 
-The left part of this diagram shows what we’ve done so far and the right part shows what we are about to do…
+The left part of this diagram shows what we’ve done so far and the right part shows what we’re about to do…
 
 https://learn.microsoft.com/en-us/dotnet/architecture/microservices/container-docker-introduction/docker-containers-images-registries
 
 EXPLAIN THE LEFT HALF AND BRIEFLY EXPLAIN THE RIGHT HALF
 
-We’ll reference this diagram after the deployment process again at which point it’ll make a lot of sense… 
+We’ll reference this diagram after the deployment process again at which point it’ll make more sense… 
 
 - PROJECT_ID=hthaogcrj-practice
 
 DEPLOYMENT STEP #1 will be to create a repository in Google Artifact Registry. Inside of this Artifact Registry we can create repositories that will hold “images”.
 
-When we build a Dockerfile we are left with what is called a “Docker Image”. A “Docker Image” is a collection of files that define all of the code and operating system requirements needed to run a particular application.
+When we build a Dockerfile we are left with what is called an “Image”. An “ Image” in the context of Docker is a collection of files that define all of the code and operating system requirements needed to run a particular application.
 
-If we rewind to when we built the “Dev Container”, we remember seeing that an image and a container was created in Docker Desktop GUI after we selected the “Reopen In Container” option…
+If we rewind to when we built the “Dev Container”, we remember seeing that an image and a container was created in Docker Desktop UI after we selected the “Reopen In Container” option in the COMMAND PALETTE…
 
-After the image defining our “Dev Container” was ran (or launched) it left us with a “mini-computer” that had all the software we needed to build an application inside of it
+After the image defining our “Dev Container” was ran (or launched) it left us with a “mini-computer” that had all the software we needed to build a Python application inside of it
 
-So in summary, when we build a Dockerfile, it leaves us with an “Image”. And when we run code along with the operating system requirements defined in its “Image”, we are left with a “Container“
+So in summary, when we build a Dockerfile, it leaves us with an “Image”. And when we run the code along with the operating system requirements defined in an “Image”, we are left with a “Container“
 
-We will now create our “Production Container” by building the Dockerfile.prod into an Image that will contain all the software and OS requirements needed to run our application on Cloud Run.
+We will now create our “Production Container” by building the Dockerfile.prod into an “Image” that will contain all the software and OS requirements needed to run our application on Cloud Run.
 
-Because our “Production Image” will be so similar to our “Dev Image” there’s an extremely high likelihood that our script will work just as it did in the “Dev Container” when we ship run it to Cloud Run…
+Because our “Production Image” will be so similar to our “Dev Image” there’s an extremely high likelihood that our little application will work just as it did in the “Dev Container” when we ship run it to Cloud Run…
 
-As we can see, the only difference between our Production Image and our Dev Image will be the removal of some of the software that was needed during during development such as gcloud, .git, and Docker. These tools are not needed when running our script (or job) in Cloud Run.
+As we can see, the only difference between our Production Image and our Dev Image will be the removal of some of the software that was needed during during development such as gcloud, .git, and Docker. These tools are not needed when running our application (or job) in Cloud Run.
 
 Now you understand the reason why Docker is so useful. When you send code on its own to different computer without defining all of the operating system requirements it needs to run successfully, you then increase the chances of it not working. Docker packages code along with its operating system requirements so it has a higher likely of working when it runs on other computers on the internet.
 
-If you are still confused by what was just said, here’s an analogy I hope helps clarify…
+If you are still confused by what was just said, here’s an analogy…
 
 Dockerfile : Image : Container :: Recipe : Frozen Meal : Meal :: Blueprint : Manufactured Good : Purchased Good
 
-OK! Enough Rambling…
+OK!
 
-When we build Docker images, we can store them in what are called “Registries”. There are many registries on the internet for example Google has a Registry, Amazon has a registry, Microsoft has a registry, and many companies run their own private registries for storing Images they don’t want to be hosted on other registries.
+When we build Docker images, we can store them in what are called “Registries”. There are many registries on the internet for example Google has a Registry, Amazon has a registry, Microsoft has a registry, and many companies run their own private registries for storing images they don’t want to be hosted outside of their network.
 
 Inside of a registry, we can create repositories for storing distinct groups of images
+
+FOR CLARITY: An image repository is not a .git repository. There are similar in a general sense but they are two different things
+
+An image repository stores Docker images. A .git repository stores the history of code changes we make to a code base and offer many collaboration features when working in TEAM settings
+
+Let’s now create a repository for storing the image powering our “Production Container”
 
 ```
 gcloud artifacts locations list
 PROJECT_ID=hthaogcrj-practice
 gcloud artifacts repositories list
-gcloud artifacts repositories create repo-for-job-1 --repository-format=docker --location=us-east1 --description="Repository for Job 1’s Docker images" --project $PROJECT_ID
+gcloud artifacts repositories create repo-for-job-1 --repository-format=docker --location=us-east1 --description="Repository for Job 1’s Images" --project $PROJECT_ID
 gcloud artifacts repositories list
 gcloud artifacts repositories describe repo-for-job-1 --location=us-east1
 gcloud artifacts docker images list us-east1-docker.pkg.dev/$PROJECT_ID/repo-for-job-1
 ```
 
-Now that we have our Image Repository set up we can now take our Dockerfile.prod file, build it, and store the resulting image into the repository…
+Now that we have our repository set up, we can use it for storing our Production Images…
 
-I’m going to show you how to do this 2 ways: Using Cloud Build AND using the Docker client
+I’m going to show you how to do this 2 ways: 1) Using Cloud Build AND 2) using the Docker client in the Dev Container
 
-First let’s walkthrough how to do this with a GCP product called Cloudbuild, which we enabled earlier…
+First let’s walkthrough how to do this with Cloud Build, which we enabled in our GCP project earlier if you recall…
 
-In the cloudbuild.yaml we can see a script that will build the Dockerfile.prod file and store the resulting image into our repository…
+```
+touch cloudbuild.yaml
+```
 
-The URLs for Artifact Registry Docker repositories in Google Cloud follow a specific format, based on the region. Here's the general format…
+In the cloudbuild.yaml we can see a script that will, no surprise here, build the Dockerfile.prod and store the resulting image into our repository…
+
+The URLs for repositories in Google Cloud follow a very specific format based on the data center where they are hosted. Here's the general format…
 
 [region]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY_NAME]
 
-So as long as we name our image appropriately things will work
+The -t flag on the “docker build” command allows us to name our images whatever we like, but, in order for the subsequent “docker push” command to know where to store the resulting image, the name must follow this GCP naming format
 
-The -t flag allows us to name our image whatever we like but in order for the docker push command to know where to store the resulting image, the name must follow this format
+AKA: As long as we name our image according to this format, things will “just work” when we issue the command to store it in our repository
+
+So! Here’s how we use Cloud Build to store images into Artifact Registry…
 
 ```
 gcloud builds submit --config=cloudbuild.yaml
+gcloud artifacts repositories list
 gcloud artifacts docker images list us-east1-docker.pkg.dev/$PROJECT_ID/repo-for-job-1
 ```
 
-And now let’s walkthrough how to build and store images into Artifact Registry using the docker client installed in “Dev Container”…
+As there are often multiple ways to skin a cat, secondly, for completeness, let’s walkthrough how to build and store images into Artifact Registry using the docker client installed in our “Dev Container” as well…
 
 ```
-docker build --platform linux/amd64 -t  -f Dockerfile.prod .
-gcloud auth print-access-token
-docker login -u oauth2accesstoken https://us-east1-docker.pkg.dev # And then paste in the access token
-gcloud auth configure-docker us-east1-docker.pkg.dev
 docker build --platform linux/amd64 -t us-east1-docker.pkg.dev/$PROJECT_ID/repo-for-job-1/job-1-image:latest -f Dockerfile.prod .
+gcloud auth print-access-token
+docker login -u oauth2accesstoken https://us-east1-docker.pkg.dev # And then paste in the access token for authenticating with the Registry
+gcloud auth configure-docker us-east1-docker.pkg.dev
 docker push us-east1-docker.pkg.dev/$PROJECT_ID/repo-for-job-1/job-1-image:latest # for storing the image into "Artifact Registry"
 ```
 
 Now that have our image stored in the Cloud, we can deploy our first job ever to Cloud Run…
 
 ```
-gcloud run jobs deploy job-1 --image us-east1-docker.pkg.dev/$PROJECT_ID/repo-for-job-1/job-1-image:latest --region us-east1 --project $PROJECT_ID
+gcloud run jobs deploy first-crj-ever --image us-east1-docker.pkg.dev/$PROJECT_ID/repo-for-job-1/job-1-image:latest --region us-east1 --project $PROJECT_ID
 ```
 
 NOTE: Explain how tags work
@@ -175,8 +187,8 @@ NOTE: Explain how tags work
 And now that we have our job registered in Cloud Run we can trigger it like so…
 
 ```
-gcloud run jobs execute job-1 --region us-east1
-gcloud run jobs execute job-1 --tasks 2 --region us-east1
+gcloud run jobs execute first-crj-ever --region us-east1
+gcloud run jobs execute first-crj-ever --tasks 2 --region us-east1 <!— GOOD TO KNOW —>
 ```
 
 VERIFY: https://console.cloud.google.com/run/jobs?project=hthaogcrj-practice
@@ -184,4 +196,4 @@ LOOK AT THE LOGS: https://console.cloud.google.com/run/jobs/details/us-east1/job
 
 Alright great! We now know how to manually deploy and execute containerized scripts using Cloud Run Jobs.
 
-Next up, we’ll automate this deployment process using GitHub Actions
+Next up, we’ll automate this manual deployment process using GitHub Actions
